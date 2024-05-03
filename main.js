@@ -19,18 +19,19 @@ function createLoadingWindow() {
 
 loadingWindow.loadFile('index.html');
 loadingWindow.setMenu(null);
-
 loadingWindow.on('closed', () => {
     loadingWindow = null;
 });
 
 }
 
-
 function createWindow() {
     playerWindow = new BrowserWindow({
-        width: 800,
+        show: false,
+        width: 1000,
         height: 600,
+        frame: true,
+        transparent: false,
         icon: path.join(__dirname, 'icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
@@ -78,14 +79,10 @@ if(!singleInstanceLock){
     });
 
 }
-  
 
 app.on('ready', () => {
     createLoadingWindow();
-    
-    playerWindow = new BrowserWindow({
-        show: false
-    });
+    createWindow();
     playerWindow.loadURL('http://music.youtube.com');
     playerWindow.setMenu(null);
 
@@ -95,7 +92,6 @@ app.on('ready', () => {
         }
         playerWindow.show();
     });
-
 });
 
 app.on('window-all-closed', () => {
