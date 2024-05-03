@@ -10,6 +10,7 @@
   "author": "Nicolaescu Ovidiu",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^30.0.2"
+    "electron": "^30.0.2",
+    "electron-builder": "^24.13.3"
   }
 }
