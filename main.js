@@ -1,4 +1,3 @@
-const electron = require('electron');
 const { app, BrowserWindow, Tray, Menu } = require('electron');
 const path = require('path');
 
@@ -35,12 +34,13 @@ function createWindow() {
       { label: 'Show Player', click:  function(){
           playerWindow.show();
       } },
+      {type: 'separator'},
       { label: 'Quit', click:  function(){
           app.isQuiting = true;
           app.quit();
-      } }
+      }}
     ]);
-    tray.setToolTip('YouTube Music');
+    tray.setToolTip('YouTube Music - Real Bears');
     tray.setContextMenu(contextMenu);
   }
   
