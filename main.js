@@ -14,20 +14,25 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     });
-
     playerWindow.loadURL('http://music.youtube.com');
     playerWindow.setMenu(null);
 
-    
     playerWindow.on('closed', () => {
-      playerWindow = null;
+        playerWindow = null;
     });
-  
-    
+
+    playerWindow.on(`close`, (event) => {
+        if(!app.isQuiting){
+            event.preventDefault();
+            playerWindow.hide();
+        }
+    });
+
+
     tray = new Tray(path.join(__dirname, 'icon.png'));
 
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show App', click:  function(){
+      { label: 'Show Player', click:  function(){
           playerWindow.show();
       } },
       { label: 'Quit', click:  function(){
@@ -35,17 +40,10 @@ function createWindow() {
           app.quit();
       } }
     ]);
-    
-    
     tray.setToolTip('YouTube Music');
     tray.setContextMenu(contextMenu);
-
-
-  
-  
   }
-
-
+  
 
 app.on('ready', createWindow);
 
