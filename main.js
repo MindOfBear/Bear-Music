@@ -1,8 +1,31 @@
 const { app, BrowserWindow, Tray, Menu } = require('electron');
 const path = require('path');
 
-let playerWindow;
+let playerWindow = null;
 let tray;
+let loadingWindow = null;
+
+function createLoadingWindow() {
+    loadingWindow = new BrowserWindow({
+        width: 400,
+        height: 300,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        webPreferences: {
+            nodeIntegration: true
+        }
+});
+
+loadingWindow.loadFile('index.html');
+loadingWindow.setMenu(null);
+
+loadingWindow.on('closed', () => {
+    loadingWindow = null;
+});
+
+}
+
 
 function createWindow() {
     playerWindow = new BrowserWindow({
@@ -13,8 +36,6 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     });
-    playerWindow.loadURL('http://music.youtube.com');
-    playerWindow.setMenu(null);
 
     playerWindow.on('closed', () => {
         playerWindow = null;
@@ -43,9 +64,39 @@ function createWindow() {
     tray.setToolTip('YouTube Music - Real Bears');
     tray.setContextMenu(contextMenu);
   }
+
+const singleInstanceLock = app.requestSingleInstanceLock();
+
+if(!singleInstanceLock){
+    app.quit();
+} else {
+    app.on('second-instance', () => {
+        if (playerWindow) {
+            if (playerWindow.isMinimized()) playerWindow.restore();
+            playerWindow.focus();
+        }
+    });
+
+}
   
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+    createLoadingWindow();
+    
+    playerWindow = new BrowserWindow({
+        show: false
+    });
+    playerWindow.loadURL('http://music.youtube.com');
+    playerWindow.setMenu(null);
+
+    playerWindow.webContents.on('did-finish-load', () => {
+        if (loadingWindow) {
+            loadingWindow.close();
+        }
+        playerWindow.show();
+    });
+
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
