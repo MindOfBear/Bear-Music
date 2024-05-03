@@ -12,5 +12,15 @@
   "devDependencies": {
     "electron": "^30.0.2",
     "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.ovidiu.app",
+    "productName": "YouTube Music",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "icon.png"
+    }
   }
 }
