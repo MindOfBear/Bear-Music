@@ -1,11 +1,18 @@
-const { app, BrowserWindow, Tray, Menu } = require('electron');
+const { app, BrowserWindow, session, Tray, Menu } = require('electron');
+const { ElectronBlocker } = require('@cliqz/adblocker-electron');
 const path = require('path');
+
+ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
+    blocker.enableBlockingInSession(session.defaultSession);
+    console.log('AdBlocker initialized!');
+});
 
 let playerWindow = null;
 let tray;
 let loadingWindow = null;
+adBlockerInitialized = false;
 
-function createLoadingWindow() {
+function createLoadingWindow() { // loading page
     loadingWindow = new BrowserWindow({
         width: 400,
         height: 300,
@@ -25,12 +32,12 @@ loadingWindow.on('closed', () => {
 
 }
 
-function createWindow() {
+function createWindow() { // main window
     playerWindow = new BrowserWindow({
         show: false,
         width: 1000,
-        height: 600,
         frame: true,
+        height: 600,
         transparent: false,
         icon: path.join(__dirname, 'icon.png'),
         webPreferences: {
@@ -50,7 +57,7 @@ function createWindow() {
     });
 
 
-    tray = new Tray(path.join(__dirname, 'icon.png'));
+    tray = new Tray(path.join(__dirname, 'icon.png')); // tray icon used for minimize to tray / restore
 
     const contextMenu = Menu.buildFromTemplate([
       { label: 'Show Player', click:  function(){
@@ -59,14 +66,19 @@ function createWindow() {
       {type: 'separator'},
       { label: 'Quit', click:  function(){
           app.isQuiting = true;
+          playerWindow.destroy();
           app.quit();
+
       }}
     ]);
     tray.setToolTip('YouTube Music - Real Bears');
     tray.setContextMenu(contextMenu);
-  }
+    tray.on('click', () => {
+        playerWindow.show();
+    });
+}
 
-const singleInstanceLock = app.requestSingleInstanceLock();
+const singleInstanceLock = app.requestSingleInstanceLock(); // single instance lock to prevent multiple instances of the app
 
 if(!singleInstanceLock){
     app.quit();
@@ -74,13 +86,14 @@ if(!singleInstanceLock){
     app.on('second-instance', () => {
         if (playerWindow) {
             if (playerWindow.isMinimized()) playerWindow.restore();
+            playerWindow.show();
             playerWindow.focus();
         }
     });
 
 }
 
-app.on('ready', () => {
+app.on('ready', () => { // create loading window and main window
     createLoadingWindow();
     createWindow();
     playerWindow.loadURL('http://music.youtube.com');
