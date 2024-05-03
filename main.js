@@ -1,38 +1,62 @@
-const { app, BrowserWindow } = require('electron')
-const path = require('node:path')
+const electron = require('electron');
+const { app, BrowserWindow, Tray, Menu } = require('electron');
+const path = require('path');
 
-const createWindow = () => {
-    const win = new BrowserWindow({
-      width: 800,
-      height: 600,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
-      }
-    })
+let playerWindow;
+let tray;
+
+function createWindow() {
+    playerWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        icon: path.join(__dirname, 'icon.png'),
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+
+    playerWindow.loadURL('http://music.youtube.com');
+    playerWindow.setMenu(null);
+
+    
+    playerWindow.on('closed', () => {
+      playerWindow = null;
+    });
   
-    win.loadURL('http://music.youtube.com')
+    
+    tray = new Tray(path.join(__dirname, 'icon.png'));
+
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Show App', click:  function(){
+          playerWindow.show();
+      } },
+      { label: 'Quit', click:  function(){
+          app.isQuiting = true;
+          app.quit();
+      } }
+    ]);
+    
+    
+    tray.setToolTip('YouTube Music');
+    tray.setContextMenu(contextMenu);
+
+
+  
+  
   }
 
-  app.whenReady().then(() => {
-    createWindow()
-  
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
-  })
-
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-  })
 
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const replaceText = (selector, text) => {
-      const element = document.getElementById(selector)
-      if (element) element.innerText = text
+app.on('ready', createWindow);
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
     }
-  
-    for (const dependency of ['chrome', 'node', 'electron']) {
-      replaceText(`${dependency}-version`, process.versions[dependency])
+});
+
+app.on('activate', () => {
+    if (playerWindow === null) {
+        createWindow();
     }
-  })
+});
