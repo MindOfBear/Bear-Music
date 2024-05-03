@@ -1,38 +1,36 @@
-const { app, BrowserWindow } = require('electron')
-const path = require('node:path')
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
 
-const createWindow = () => {
-    const win = new BrowserWindow({
-      width: 800,
-      height: 600,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
-      }
-    })
-  
-    win.loadURL('http://music.youtube.com')
+let playerWindow;
+
+function createWindow() {
+    playerWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+
+    playerWindow.loadURL('http://music.youtube.com');
+    playerWindow.setMenu(null);
+
+    
+    playerWindow.on('closed', () => {
+      playerWindow = null;
+    });
   }
 
-  app.whenReady().then(() => {
-    createWindow()
-  
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
-  })
+app.on('ready', createWindow);
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-  })
-
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const replaceText = (selector, text) => {
-      const element = document.getElementById(selector)
-      if (element) element.innerText = text
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
     }
-  
-    for (const dependency of ['chrome', 'node', 'electron']) {
-      replaceText(`${dependency}-version`, process.versions[dependency])
+});
+
+app.on('activate', () => {
+    if (playerWindow === null) {
+        createWindow();
     }
-  })
+});
