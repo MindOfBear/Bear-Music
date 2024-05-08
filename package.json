@@ -1,6 +1,6 @@
 {
   "name": "youtube-music",
-  "version": "1.5",
+  "version": "1.1.0",
   "description": "Desktop App for YouTube Music",
   "main": "main.js",
   "scripts": {
@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@cliqz/adblocker-electron": "^1.27.2",
-    "cross-fetch": "^4.0.0",
-    "electron-titlebar": "^0.0.3"
+    "cross-fetch": "^4.0.0"
   }
 }

@@ -4,15 +4,17 @@ const path = require('path');
 
 ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
     blocker.enableBlockingInSession(session.defaultSession);
-    console.log('AdBlocker initialized!');
 });
+
+const Store = require('electron-store');
+const store = new Store();
 
 let playerWindow = null;
 let tray;
 let loadingWindow = null;
 adBlockerInitialized = false;
 
-function createLoadingWindow() { // loading page
+function createLoadingWindow() {
     loadingWindow = new BrowserWindow({
         width: 400,
         height: 300,
@@ -32,7 +34,7 @@ loadingWindow.on('closed', () => {
 
 }
 
-function createWindow() { // main window
+function createWindow() { 
     playerWindow = new BrowserWindow({
         show: false,
         width: 1000,
@@ -57,7 +59,7 @@ function createWindow() { // main window
     });
 
 
-    tray = new Tray(path.join(__dirname, 'icon.png')); // tray icon used for minimize to tray / restore
+    tray = new Tray(path.join(__dirname, 'icon.png')); 
 
     const contextMenu = Menu.buildFromTemplate([
       { label: 'Show Player', click:  function(){
@@ -78,7 +80,7 @@ function createWindow() { // main window
     });
 }
 
-const singleInstanceLock = app.requestSingleInstanceLock(); // single instance lock to prevent multiple instances of the app
+const singleInstanceLock = app.requestSingleInstanceLock(); 
 
 if(!singleInstanceLock){
     app.quit();
@@ -93,7 +95,7 @@ if(!singleInstanceLock){
 
 }
 
-app.on('ready', () => { // create loading window and main window
+app.on('ready', () => { 
     createLoadingWindow();
     createWindow();
     playerWindow.loadURL('http://music.youtube.com');
