@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, Tray, Menu } = require('electron');
+const { app, gloabalShortcut,BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
 const { ElectronBlocker } = require('@cliqz/adblocker-electron');
 const path = require('path');
 
@@ -12,6 +12,7 @@ let playerWindow = null;
 let tray;
 let loadingWindow = null;
 adBlockerInitialized = false;
+let isMenuVisible = false;
 
 function createLoadingWindow() {
     loadingWindow = new BrowserWindow({
@@ -85,6 +86,7 @@ function createWindow() {
             bounds: playerWindow.getBounds()
         };
         fs.writeFileSync(initPath, JSON.stringify(data));
+          globalShortcut.unregisterAll();
           app.isQuiting = true;
           playerWindow.destroy();
           app.quit();
@@ -117,7 +119,19 @@ app.on('ready', () => {
     createLoadingWindow();
     createWindow();
     playerWindow.loadURL('http://music.youtube.com');
+
+    playerMenu = Menu.buildFromTemplate([
+        {
+            label: 'Info'
+        }
+    
+    ])
+
     playerWindow.setMenu(null);
+    globalShortcut.register('CONTROL+SHIFT+T', () => {
+        isMenuVisible = !isMenuVisible;
+        playerWindow.setMenu(isMenuVisible ? playerMenu : null);
+    });
 
     playerWindow.webContents.on('did-finish-load', () => {
         if (loadingWindow) {
