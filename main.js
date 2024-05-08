@@ -6,8 +6,7 @@ ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
     blocker.enableBlockingInSession(session.defaultSession);
 });
 
-const Store = require('electron-store');
-const store = new Store();
+
 
 let playerWindow = null;
 let tray;
@@ -35,23 +34,38 @@ loadingWindow.on('closed', () => {
 }
 
 function createWindow() { 
-    playerWindow = new BrowserWindow({
-        show: false,
-        width: 1000,
-        frame: true,
-        height: 600,
-        transparent: false,
-        icon: path.join(__dirname, 'icon.png'),
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
-        }
-    });
-
+    var path = require("path");
+    var fs = require("fs");
+    var initPath = path.join(app.getPath("userData"), "init.json");
+    var data;
+    try {
+        data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+    } catch (e) {}
+    playerWindow = new BrowserWindow(
+        (data && data.bounds ? { 
+            ...data.bounds, 
+            show: false, 
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js')
+            }
+        } : {
+            show: false,
+            width: 1000,
+            frame: true,
+            height: 600,
+            transparent: false,
+            icon: path.join(__dirname, 'icon.png'),
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js')
+            }
+        })
+    );
     playerWindow.on('closed', () => {
         playerWindow = null;
     });
 
     playerWindow.on(`close`, (event) => {
+
         if(!app.isQuiting){
             event.preventDefault();
             playerWindow.hide();
@@ -67,6 +81,10 @@ function createWindow() {
       } },
       {type: 'separator'},
       { label: 'Quit', click:  function(){
+        var data = {
+            bounds: playerWindow.getBounds()
+        };
+        fs.writeFileSync(initPath, JSON.stringify(data));
           app.isQuiting = true;
           playerWindow.destroy();
           app.quit();
