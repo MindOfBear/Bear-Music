@@ -6,7 +6,7 @@ ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
     blocker.enableBlockingInSession(session.defaultSession);
 });
 
-
+// de adaugat meniu popup pe macos si window cu spotify sau youtube music , adblock enable disable 
 
 let playerWindow = null;
 let tray;
@@ -128,9 +128,11 @@ app.on('ready', () => {
     ])
 
     playerWindow.setMenu(null);
-    globalShortcut.register('CONTROL+SHIFT+T', () => {
+    
+    globalShortcut.register('CommandOrControl+SHIFT+T', () => {
         isMenuVisible = !isMenuVisible;
         playerWindow.setMenu(isMenuVisible ? playerMenu : null);
+        console.log("Shortcut pressed");
     });
 
     playerWindow.webContents.on('did-finish-load', () => {
