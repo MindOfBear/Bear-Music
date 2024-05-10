@@ -1,10 +1,10 @@
 const { app, gloabalShortcut,BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
 const path = require('path');
 const initializeAdBlocker = require('./core/adblocker');
+const singleInstanceLock = app.requestSingleInstanceLock(); 
+
 let fs = require("fs");
-
 let initPath = path.join(app.getPath("userData"), "init.json");
-
 let playerWindow = null;
 let tray;
 let loadingWindow = null;
@@ -20,14 +20,12 @@ function createLoadingWindow() {
         webPreferences: {
             nodeIntegration: true
         }
-});
-
-loadingWindow.loadFile('index.html');
-loadingWindow.setMenu(null);
-loadingWindow.on('closed', () => {
-    loadingWindow = null;
-});
-
+    });
+    loadingWindow.loadFile('index.html');
+    loadingWindow.setMenu(null);
+    loadingWindow.on('closed', () => {
+        loadingWindow = null;
+    });
 }
 
 function createWindow() { 
@@ -70,12 +68,11 @@ function createWindow() {
     tray = new Tray(path.join(__dirname, 'icon.png')); 
 
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show Player', click:  function(){
-          playerWindow.show();
-      } },
+      { label: 'Music - Real Bears', enabled: false},
       {type: 'separator'},
       { label: 'Quit', click:  function(){
         var data = {
+            ...data,
             bounds: playerWindow.getBounds(),
             lastURL: playerWindow.webContents.getURL(),
         };
@@ -87,14 +84,13 @@ function createWindow() {
 
       }}
     ]);
-    tray.setToolTip('YouTube Music - Real Bears');
+    tray.setToolTip('Music - Real Bears');
     tray.setContextMenu(contextMenu);
     tray.on('click', () => {
         playerWindow.show();
     });
 }
 
-const singleInstanceLock = app.requestSingleInstanceLock(); 
 
 if(!singleInstanceLock){
     app.quit();
@@ -111,7 +107,7 @@ if(!singleInstanceLock){
 
 const playerMenu = Menu.buildFromTemplate([
     {
-        label: 'Real Bears Player',
+        label: '🎵 Player - Real Bears',
         enabled: false,
     },
     { type: 'separator' },
@@ -119,12 +115,27 @@ const playerMenu = Menu.buildFromTemplate([
         label: 'Settings',
         submenu: [
             {
-                label: 'Remember Song',
+                label: 'Remember page',
                 type: 'checkbox',
                 checked: 'true',
                 click: (menuItem) => {
-                    console.log(menuItem.checked);
+                    let data;
+                    try{
+                        data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+                    } catch (e) {
+
+                    }
+                    data.rememberPage = menuItem.checked;
+                    fs.writeFileSync(initPath, JSON.stringify(data));
+                    console.log(data);
                 }
+            },
+            {
+                label: 'Refresh Player',
+                click: () => {
+                    playerWindow.reload();
+                }
+
             },
         ]
     }
@@ -137,15 +148,24 @@ app.on('ready', async () => {
     let data;
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        const rememberPage = data.rememberPage;
         const defaultURL = 'http://music.youtube.com';
-        const urlToLoad = data.lastURL || defaultURL;
+        const urlToLoad = defaultURL;
+        if (rememberPage == true) {
+            urlToLoad = data.lastURL || defaultURL;
+            console.log("True: ", urlToLoad);
+            playerWindow.loadURL(urlToLoad);
+        } else if (rememberPage == false){
+            urlToLoad = defaultURL;
+            console.log("False: ", urlToLoad);
+            playerWindow.loadURL(urlToLoad);
+        }
         console.log(urlToLoad);
         playerWindow.loadURL(urlToLoad);
     } catch (error) {
         console.error(error);
     }
 
-    
     playerWindow.setMenu(null);
     globalShortcut.register('CONTROL+SHIFT+T', () => {
         isMenuVisible = !isMenuVisible;
@@ -158,6 +178,7 @@ app.on('ready', async () => {
         }
         playerWindow.show();
     });
+
 });
 
 app.on('window-all-closed', () => {
