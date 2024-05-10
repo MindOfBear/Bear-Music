@@ -3,6 +3,38 @@ const path = require('path');
 const initializeAdBlocker = require('./core/adblocker');
 const singleInstanceLock = app.requestSingleInstanceLock(); 
 
+const DiscordRPC = require('discord-rpc');
+
+DiscordRPC.register('1238433985567391807');
+
+const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+
+const detailOptions = [
+    '🚀 Drinking with Jinx',
+    '☢️ Droppin Nukes',
+    '🏹 Killing Dragon',
+    '🏎️💨 Vibing in Octane'
+];
+
+async function setRichPresence(playerWindowTitle){
+    let randomDetail = detailOptions[Math.floor(Math.random() * detailOptions.length)];
+    if (!rpc || !playerWindow) {
+        return;
+    }
+    await rpc.setActivity({
+        details: randomDetail,
+        state: playerWindowTitle,
+        startTimestamp: new Date(),
+        largeImageKey: 'image',
+        largeImageText: '🐻🎶',
+        smallImageKey: 'image',
+        smallImageText: '🎶🐻',
+        instance: false,
+    });
+}
+
+rpc.login({ clientId: '1238433985567391807' }).catch(console.error);
+
 let fs = require("fs");
 const createAboutWindow = require('./pages/aboutPage/aboutWindow');
 let initPath = path.join(app.getPath("userData"), "init.json");
@@ -139,7 +171,6 @@ const playerMenu = Menu.buildFromTemplate([
                     }
                     data.rememberPage = menuItem.checked;
                     fs.writeFileSync(initPath, JSON.stringify(data));
-                    console.log(data);
                 }
             },
             {
@@ -181,11 +212,23 @@ app.on('ready', async () => {
     });
 
     playerWindow.webContents.on('did-finish-load', () => {
+        setRichPresence("Doing nothing... 🥱");
         if (loadingWindow) {
             loadingWindow.close();
         }
         playerWindow.show();
     });
+
+    playerWindow.on('page-title-updated', (event, title) => {
+        let parsedTitle = title.replace(' - YouTube Music', '');
+        if (parsedTitle == 'YouTube Music') {
+            parsedTitle = 'Playing nothing... 🥱';
+        }
+        console.log(parsedTitle);
+        setRichPresence(parsedTitle);
+    });
+
+
 });
 
 app.on('window-all-closed', () => {

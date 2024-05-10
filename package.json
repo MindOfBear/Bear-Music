@@ -1,7 +1,7 @@
 {
   "name": "youtube-music",
   "version": "1.2.0",
-  "description": "Desktop App for YouTube Music",
+  "description": "Desktop App for Music Platforms",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@cliqz/adblocker-electron": "^1.27.2",
-    "cross-fetch": "^4.0.0"
+    "cross-fetch": "^4.0.0",
+    "discord-rpc": "^4.0.1"
   }
 }

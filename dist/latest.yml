@@ -1,8 +1,8 @@
-version: 1.1.0
+version: 1.2.0
 files:
-  - url: YouTube-Music-Setup-1.1.0.exe
-    sha512: HALG/6+xb2A8hNA0JygPVyQ6PPXkV8zTX+eo1xwySmTPvuvQurT8uuEhsD7l9ElbxXC/x+KfvS50QNUyEqt+Cw==
-    size: 91815257
-path: YouTube-Music-Setup-1.1.0.exe
-sha512: HALG/6+xb2A8hNA0JygPVyQ6PPXkV8zTX+eo1xwySmTPvuvQurT8uuEhsD7l9ElbxXC/x+KfvS50QNUyEqt+Cw==
-releaseDate: '2024-05-08T21:35:29.017Z'
+  - url: YouTube-Music-Setup-1.2.0.exe
+    sha512: zq9uAl3MWiBw46YG8PH2VFTYIgCKBVizRJpyu0miUkocvckA596IjABEne1avfdJ5M5aBKhUL6inTSF3XmTnaQ==
+    size: 91721597
+path: YouTube-Music-Setup-1.2.0.exe
+sha512: zq9uAl3MWiBw46YG8PH2VFTYIgCKBVizRJpyu0miUkocvckA596IjABEne1avfdJ5M5aBKhUL6inTSF3XmTnaQ==
+releaseDate: '2024-05-10T11:40:39.621Z'
