@@ -1,17 +1,13 @@
 const { app, gloabalShortcut,BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
-const { ElectronBlocker } = require('@cliqz/adblocker-electron');
 const path = require('path');
+const initializeAdBlocker = require('./core/adblocker');
+let fs = require("fs");
 
-ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
-    blocker.enableBlockingInSession(session.defaultSession);
-});
-
-
+let initPath = path.join(app.getPath("userData"), "init.json");
 
 let playerWindow = null;
 let tray;
 let loadingWindow = null;
-adBlockerInitialized = false;
 let isMenuVisible = false;
 
 function createLoadingWindow() {
@@ -35,10 +31,7 @@ loadingWindow.on('closed', () => {
 }
 
 function createWindow() { 
-    var path = require("path");
-    var fs = require("fs");
-    var initPath = path.join(app.getPath("userData"), "init.json");
-    var data;
+    let data;
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
     } catch (e) {}
@@ -83,7 +76,8 @@ function createWindow() {
       {type: 'separator'},
       { label: 'Quit', click:  function(){
         var data = {
-            bounds: playerWindow.getBounds()
+            bounds: playerWindow.getBounds(),
+            lastURL: playerWindow.webContents.getURL(),
         };
         fs.writeFileSync(initPath, JSON.stringify(data));
           globalShortcut.unregisterAll();
@@ -115,18 +109,43 @@ if(!singleInstanceLock){
 
 }
 
-app.on('ready', () => { 
+const playerMenu = Menu.buildFromTemplate([
+    {
+        label: 'Real Bears Player',
+        enabled: false,
+    },
+    { type: 'separator' },
+    {
+        label: 'Settings',
+        submenu: [
+            {
+                label: 'Remember Song',
+                type: 'checkbox',
+                checked: 'true',
+                click: (menuItem) => {
+                    console.log(menuItem.checked);
+                }
+            },
+        ]
+    }
+]);
+
+app.on('ready', async () => { 
     createLoadingWindow();
     createWindow();
-    playerWindow.loadURL('http://music.youtube.com');
+    await initializeAdBlocker(fetch, session);
+    let data;
+    try {
+        data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        const defaultURL = 'http://music.youtube.com';
+        const urlToLoad = data.lastURL || defaultURL;
+        console.log(urlToLoad);
+        playerWindow.loadURL(urlToLoad);
+    } catch (error) {
+        console.error(error);
+    }
 
-    playerMenu = Menu.buildFromTemplate([
-        {
-            label: 'Info'
-        }
     
-    ])
-
     playerWindow.setMenu(null);
     globalShortcut.register('CONTROL+SHIFT+T', () => {
         isMenuVisible = !isMenuVisible;
