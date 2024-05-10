@@ -4,6 +4,7 @@ const initializeAdBlocker = require('./core/adblocker');
 const singleInstanceLock = app.requestSingleInstanceLock(); 
 
 let fs = require("fs");
+const createAboutWindow = require('./pages/aboutPage/aboutWindow');
 let initPath = path.join(app.getPath("userData"), "init.json");
 let playerWindow = null;
 let tray;
@@ -28,7 +29,7 @@ function createLoadingWindow() { // creating loading window (splash screen)
             nodeIntegration: true
         }
     });
-    loadingWindow.loadFile('loadingPage/loading.html');
+    loadingWindow.loadFile('pages/loadingPage/loading.html');
     loadingWindow.setMenu(null);
     loadingWindow.on('closed', () => {
         loadingWindow = null;
@@ -75,6 +76,11 @@ function createWindow() { // creating the main window
     const contextMenu = Menu.buildFromTemplate([
       { label: 'Music - Real Bears', enabled: false},
       {type: 'separator'},
+      { 
+        label: 'About' , click: ()=>{
+        createAboutWindow();
+        }
+      },
       { label: 'Quit', click:  function(){
         try {
             data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
@@ -97,7 +103,6 @@ function createWindow() { // creating the main window
         playerWindow.show();
     });
 }
-
 
 if(!singleInstanceLock){ // check if the app is already running
     app.quit();
