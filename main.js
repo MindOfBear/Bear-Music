@@ -10,7 +10,14 @@ let tray;
 let loadingWindow = null;
 let isMenuVisible = false;
 
-function createLoadingWindow() {
+let data = {};
+try {
+    data = JSON.parse(fs.readFileSync(initPath, 'utf8')); // prelevate app data from file
+} catch (e) {
+    // File doesnt exist - ignore
+}
+
+function createLoadingWindow() { // creating loading window (splash screen)
     loadingWindow = new BrowserWindow({
         width: 400,
         height: 300,
@@ -21,15 +28,14 @@ function createLoadingWindow() {
             nodeIntegration: true
         }
     });
-    loadingWindow.loadFile('index.html');
+    loadingWindow.loadFile('loadingPage/loading.html');
     loadingWindow.setMenu(null);
     loadingWindow.on('closed', () => {
         loadingWindow = null;
     });
 }
 
-function createWindow() { 
-    let data;
+function createWindow() { // creating the main window
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
     } catch (e) {}
@@ -52,12 +58,12 @@ function createWindow() {
             }
         })
     );
+
     playerWindow.on('closed', () => {
         playerWindow = null;
     });
 
     playerWindow.on(`close`, (event) => {
-
         if(!app.isQuiting){
             event.preventDefault();
             playerWindow.hide();
@@ -66,21 +72,22 @@ function createWindow() {
 
 
     tray = new Tray(path.join(__dirname, 'icon.png')); 
-
     const contextMenu = Menu.buildFromTemplate([
       { label: 'Music - Real Bears', enabled: false},
       {type: 'separator'},
       { label: 'Quit', click:  function(){
-        var data = {
-            ...data,
-            bounds: playerWindow.getBounds(),
-            lastURL: playerWindow.webContents.getURL(),
-        };
+        try {
+            data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        } catch (e) {
+            // handle error
+        }
+        data.lastURL = playerWindow.webContents.getURL();
+        data.bounds = playerWindow.getBounds();
         fs.writeFileSync(initPath, JSON.stringify(data));
-          globalShortcut.unregisterAll();
-          app.isQuiting = true;
-          playerWindow.destroy();
-          app.quit();
+        globalShortcut.unregisterAll();
+        app.isQuiting = true;
+        playerWindow.destroy();
+        app.quit();
 
       }}
     ]);
@@ -92,7 +99,7 @@ function createWindow() {
 }
 
 
-if(!singleInstanceLock){
+if(!singleInstanceLock){ // check if the app is already running
     app.quit();
 } else {
     app.on('second-instance', () => {
@@ -117,7 +124,7 @@ const playerMenu = Menu.buildFromTemplate([
             {
                 label: 'Remember page',
                 type: 'checkbox',
-                checked: 'true',
+                checked: data.rememberPage,
                 click: (menuItem) => {
                     let data;
                     try{
@@ -144,23 +151,19 @@ const playerMenu = Menu.buildFromTemplate([
 app.on('ready', async () => { 
     createLoadingWindow();
     createWindow();
-    await initializeAdBlocker(fetch, session);
-    let data;
+    await initializeAdBlocker(fetch, session); // initialize adblocker || TODO: settings for adblocker
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
-        const rememberPage = data.rememberPage;
-        const defaultURL = 'http://music.youtube.com';
-        const urlToLoad = defaultURL;
-        if (rememberPage == true) {
+        let rememberPage = data.rememberPage;
+        let defaultURL = 'http://music.youtube.com';
+        let urlToLoad = defaultURL;
+        if (rememberPage == true) { // if remember page setting is enabled, load the last page
             urlToLoad = data.lastURL || defaultURL;
-            console.log("True: ", urlToLoad);
             playerWindow.loadURL(urlToLoad);
-        } else if (rememberPage == false){
-            urlToLoad = defaultURL;
-            console.log("False: ", urlToLoad);
+        } else if (rememberPage == false){ // if remember page setting is disabled, load the default page
+            urlToLoad == defaultURL;
             playerWindow.loadURL(urlToLoad);
         }
-        console.log(urlToLoad);
         playerWindow.loadURL(urlToLoad);
     } catch (error) {
         console.error(error);
@@ -178,7 +181,6 @@ app.on('ready', async () => {
         }
         playerWindow.show();
     });
-
 });
 
 app.on('window-all-closed', () => {
