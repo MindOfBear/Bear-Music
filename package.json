@@ -14,8 +14,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "OvidiuNicolaescu.youtube-music",
-    "productName": "YouTube Music",
+    "appId": "OvidiuNicolaescu.bear-music",
+    "productName": "Bear Music",
     "directories": {
       "output": "dist"
     },

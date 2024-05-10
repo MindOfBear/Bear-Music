@@ -25,7 +25,7 @@ async function setRichPresence(playerWindowTitle){
         details: randomDetail,
         state: playerWindowTitle,
         startTimestamp: new Date(),
-        largeImageKey: 'image',
+        largeImageKey: 'lgimage',
         largeImageText: '🐻🎶',
         smallImageKey: 'image',
         smallImageText: '🎶🐻',
@@ -47,7 +47,7 @@ let data = {};
 try {
     data = JSON.parse(fs.readFileSync(initPath, 'utf8')); // prelevate app data from file
 } catch (e) {
-    // File doesnt exist - ignore
+    fs.writeFileSync(initPath, JSON.stringify(data));
 }
 
 function createLoadingWindow() { // creating loading window (splash screen)
@@ -106,7 +106,7 @@ function createWindow() { // creating the main window
 
     tray = new Tray(path.join(__dirname, 'icon.png')); 
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Music - Real Bears', enabled: false},
+      { label: 'Bear Music', enabled: false},
       {type: 'separator'},
       { 
         label: 'About' , click: ()=>{
@@ -190,7 +190,7 @@ app.on('ready', async () => {
     await initializeAdBlocker(fetch, session); // initialize adblocker || TODO: settings for adblocker
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
-        let rememberPage = data.rememberPage;
+        let rememberPage = data.rememberPage !== undefined ? data.rememberPage : false;
         let defaultURL = 'http://music.youtube.com';
         let urlToLoad = defaultURL;
         if (rememberPage == true) { // if remember page setting is enabled, load the last page
@@ -202,7 +202,7 @@ app.on('ready', async () => {
         }
         playerWindow.loadURL(urlToLoad);
     } catch (error) {
-        console.error(error);
+
     }
 
     playerWindow.setMenu(null);
@@ -220,11 +220,10 @@ app.on('ready', async () => {
     });
 
     playerWindow.on('page-title-updated', (event, title) => {
-        let parsedTitle = title.replace(' - YouTube Music', '');
+        let parsedTitle = title.replace(' - YouTube Music', '🎵');
         if (parsedTitle == 'YouTube Music') {
             parsedTitle = 'Playing nothing... 🥱';
         }
-        console.log(parsedTitle);
         setRichPresence(parsedTitle);
     });
 
