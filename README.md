@@ -1,7 +1,7 @@
-## YouTube Music Player
+## Bear Music Player
 This application is created using Electron JavaScript Framework.
 ### App Features:
-- YouTube Music Player | Listen YouTube music without intreruptions</br>
+- Listen YouTube music without intreruptions</br>
 - Background music play (use less resources)</br>
 - Build in AdBlocker
 

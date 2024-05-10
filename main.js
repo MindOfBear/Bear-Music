@@ -1,20 +1,48 @@
-const { app, gloabalShortcut,BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
-const { ElectronBlocker } = require('@cliqz/adblocker-electron');
+const detailOptions = require('./core/discordOptions');
+const initializeAdBlocker = require('./core/adblocker');
+const { app, BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
 const path = require('path');
 
-ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
-    blocker.enableBlockingInSession(session.defaultSession);
-});
+const singleInstanceLock = app.requestSingleInstanceLock(); 
+const DiscordRPC = require('discord-rpc');
+DiscordRPC.register('1238433985567391807');
+const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 
-// de adaugat meniu popup pe macos si window cu spotify sau youtube music , adblock enable disable 
+async function setRichPresence(playerWindowTitle){
+    let randomDetail = detailOptions[Math.floor(Math.random() * detailOptions.length)];
+    if (!rpc || !playerWindow) {
+        return;
+    }
+    await rpc.setActivity({
+        details: randomDetail,
+        state: playerWindowTitle,
+        startTimestamp: new Date(),
+        largeImageKey: 'lgimage',
+        largeImageText: 'What a bear! 🐻',
+        smallImageKey: 'image',
+        smallImageText: 'Stop hovering around... 🤔',
+        instance: false,
+    });
+}
 
+rpc.login({ clientId: '1238433985567391807' }).catch(console.error);
+
+let fs = require("fs");
+const createAboutWindow = require('./pages/aboutPage/aboutWindow');
+let initPath = path.join(app.getPath("userData"), "init.json");
 let playerWindow = null;
 let tray;
 let loadingWindow = null;
-adBlockerInitialized = false;
 let isMenuVisible = false;
 
-function createLoadingWindow() {
+let data = {};
+try {
+    data = JSON.parse(fs.readFileSync(initPath, 'utf8')); // prelevate app data from file
+} catch (e) {
+    fs.writeFileSync(initPath, JSON.stringify(data));
+}
+
+function createLoadingWindow() { // creating loading window (splash screen)
     loadingWindow = new BrowserWindow({
         width: 400,
         height: 300,
@@ -24,21 +52,15 @@ function createLoadingWindow() {
         webPreferences: {
             nodeIntegration: true
         }
-});
-
-loadingWindow.loadFile('index.html');
-loadingWindow.setMenu(null);
-loadingWindow.on('closed', () => {
-    loadingWindow = null;
-});
-
+    });
+    loadingWindow.loadFile('pages/loadingPage/loading.html');
+    loadingWindow.setMenu(null);
+    loadingWindow.on('closed', () => {
+        loadingWindow = null;
+    });
 }
 
-function createWindow() { 
-    var path = require("path");
-    var fs = require("fs");
-    var initPath = path.join(app.getPath("userData"), "init.json");
-    var data;
+function createWindow() { // creating the main window
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
     } catch (e) {}
@@ -61,12 +83,12 @@ function createWindow() {
             }
         })
     );
+
     playerWindow.on('closed', () => {
         playerWindow = null;
     });
 
     playerWindow.on(`close`, (event) => {
-
         if(!app.isQuiting){
             event.preventDefault();
             playerWindow.hide();
@@ -75,34 +97,39 @@ function createWindow() {
 
 
     tray = new Tray(path.join(__dirname, 'icon.png')); 
-
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show Player', click:  function(){
-          playerWindow.show();
-      } },
+      { label: 'Bear Music', enabled: false},
       {type: 'separator'},
+      { 
+        label: 'About' , click: ()=>{
+        createAboutWindow();
+        }
+      },
       { label: 'Quit', click:  function(){
-        var data = {
-            bounds: playerWindow.getBounds()
-        };
+        try {
+            data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        } catch (e) {
+            // handle error
+        }
+        data.lastURL = playerWindow.webContents.getURL();
+        data.bounds = playerWindow.getBounds();
+        data.OldMan = true;
         fs.writeFileSync(initPath, JSON.stringify(data));
-          globalShortcut.unregisterAll();
-          app.isQuiting = true;
-          playerWindow.destroy();
-          app.quit();
+        globalShortcut.unregisterAll();
+        app.isQuiting = true;
+        playerWindow.destroy();
+        app.quit();
 
       }}
     ]);
-    tray.setToolTip('YouTube Music - Real Bears');
+    tray.setToolTip('Music - Real Bears');
     tray.setContextMenu(contextMenu);
     tray.on('click', () => {
         playerWindow.show();
     });
 }
 
-const singleInstanceLock = app.requestSingleInstanceLock(); 
-
-if(!singleInstanceLock){
+if(!singleInstanceLock){ // check if the app is already running
     app.quit();
 } else {
     app.on('second-instance', () => {
@@ -115,17 +142,63 @@ if(!singleInstanceLock){
 
 }
 
-app.on('ready', () => { 
+const playerMenu = Menu.buildFromTemplate([
+    {
+        label: '🎵 Player - Real Bears',
+        enabled: false,
+    },
+    { type: 'separator' },
+    {
+        label: 'Settings',
+        submenu: [
+            {
+                label: 'Remember page',
+                type: 'checkbox',
+                checked: data.rememberPage,
+                click: (menuItem) => {
+                    let data;
+                    try{
+                        data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+                    } catch (e) {
+
+                    }
+                    data.rememberPage = menuItem.checked;
+                    fs.writeFileSync(initPath, JSON.stringify(data));
+                }
+            },
+            {
+                label: 'Refresh Player',
+                click: () => {
+                    playerWindow.reload();
+                }
+
+            },
+        ]
+    }
+]);
+
+app.on('ready', async () => { 
     createLoadingWindow();
     createWindow();
-    playerWindow.loadURL('http://music.youtube.com');
-
-    playerMenu = Menu.buildFromTemplate([
-        {
-            label: 'Info'
+    try {
+        data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        if (data.OldMan === true){
+            await initializeAdBlocker(fetch, session)
         }
-    
-    ])
+        let rememberPage = data.rememberPage !== undefined ? data.rememberPage : false;
+        let defaultURL = 'http://music.youtube.com';
+        let urlToLoad = defaultURL;
+        if (rememberPage == true) { // if remember page setting is enabled, load the last page
+            urlToLoad = data.lastURL || defaultURL;
+            playerWindow.loadURL(urlToLoad);
+        } else if (rememberPage == false){ // if remember page setting is disabled, load the default page
+            urlToLoad == defaultURL;
+            playerWindow.loadURL(urlToLoad);
+        }
+        playerWindow.loadURL(urlToLoad);
+    } catch (error) {
+
+    }
 
     playerWindow.setMenu(null);
     
@@ -141,6 +214,16 @@ app.on('ready', () => {
         }
         playerWindow.show();
     });
+
+    playerWindow.on('page-title-updated', (event, title) => {
+        let parsedTitle = title.replace(' - YouTube Music', '🎵');
+        if (parsedTitle == 'YouTube Music') {
+            parsedTitle = 'Nothing playing... 🥱';
+        }
+        setRichPresence(parsedTitle);
+    });
+
+
 });
 
 app.on('window-all-closed', () => {
