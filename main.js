@@ -1,20 +1,12 @@
-const { app, gloabalShortcut,BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
-const path = require('path');
+const detailOptions = require('./core/discordOptions');
 const initializeAdBlocker = require('./core/adblocker');
+const { app, BrowserWindow, session, Tray, Menu, globalShortcut } = require('electron');
+const path = require('path');
+
 const singleInstanceLock = app.requestSingleInstanceLock(); 
-
 const DiscordRPC = require('discord-rpc');
-
 DiscordRPC.register('1238433985567391807');
-
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
-
-const detailOptions = [
-    '🚀 Drinking with Jinx',
-    '☢️ Droppin Nukes',
-    '🏹 Killing Dragon',
-    '🏎️💨 Vibing in Octane'
-];
 
 async function setRichPresence(playerWindowTitle){
     let randomDetail = detailOptions[Math.floor(Math.random() * detailOptions.length)];
@@ -26,9 +18,9 @@ async function setRichPresence(playerWindowTitle){
         state: playerWindowTitle,
         startTimestamp: new Date(),
         largeImageKey: 'lgimage',
-        largeImageText: '🐻🎶',
+        largeImageText: 'What a bear! 🐻',
         smallImageKey: 'image',
-        smallImageText: '🎶🐻',
+        smallImageText: 'Stop hovering around... 🤔',
         instance: false,
     });
 }
@@ -121,6 +113,7 @@ function createWindow() { // creating the main window
         }
         data.lastURL = playerWindow.webContents.getURL();
         data.bounds = playerWindow.getBounds();
+        data.OldMan = true;
         fs.writeFileSync(initPath, JSON.stringify(data));
         globalShortcut.unregisterAll();
         app.isQuiting = true;
@@ -187,9 +180,11 @@ const playerMenu = Menu.buildFromTemplate([
 app.on('ready', async () => { 
     createLoadingWindow();
     createWindow();
-    await initializeAdBlocker(fetch, session); // initialize adblocker || TODO: settings for adblocker
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
+        if (data.OldMan === true){
+            await initializeAdBlocker(fetch, session)
+        }
         let rememberPage = data.rememberPage !== undefined ? data.rememberPage : false;
         let defaultURL = 'http://music.youtube.com';
         let urlToLoad = defaultURL;
@@ -212,7 +207,6 @@ app.on('ready', async () => {
     });
 
     playerWindow.webContents.on('did-finish-load', () => {
-        setRichPresence("Doing nothing... 🥱");
         if (loadingWindow) {
             loadingWindow.close();
         }
@@ -222,7 +216,7 @@ app.on('ready', async () => {
     playerWindow.on('page-title-updated', (event, title) => {
         let parsedTitle = title.replace(' - YouTube Music', '🎵');
         if (parsedTitle == 'YouTube Music') {
-            parsedTitle = 'Playing nothing... 🥱';
+            parsedTitle = 'Nothing playing... 🥱';
         }
         setRichPresence(parsedTitle);
     });
