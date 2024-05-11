@@ -19,6 +19,9 @@
     "directories": {
       "output": "dist"
     },
+    "mac": {
+      "target": "dmg"
+    },
     "win": {
       "icon": "icon.png"
     }
@@ -26,6 +29,7 @@
   "dependencies": {
     "@cliqz/adblocker-electron": "^1.27.3",
     "cross-fetch": "^4.0.0",
-    "discord-rpc": "^4.0.1"
+    "discord-rpc": "^4.0.1",
+    "dmg-license": "^1.0.11"
   }
 }
