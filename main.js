@@ -208,9 +208,11 @@ app.on('ready', async () => {
     }
 
     playerWindow.setMenu(null);
-    globalShortcut.register('CONTROL+SHIFT+T', () => {
+    
+    globalShortcut.register('CommandOrControl+SHIFT+T', () => {
         isMenuVisible = !isMenuVisible;
         playerWindow.setMenu(isMenuVisible ? playerMenu : null);
+        console.log("Shortcut pressed");
     });
 
     playerWindow.webContents.on('did-finish-load', () => {
