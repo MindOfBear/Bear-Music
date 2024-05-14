@@ -160,7 +160,7 @@ const playerMenu = Menu.buildFromTemplate([
                     try{
                         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
                     } catch (e) {
-
+                       
                     }
                     data.rememberPage = menuItem.checked;
                     fs.writeFileSync(initPath, JSON.stringify(data));
@@ -170,6 +170,13 @@ const playerMenu = Menu.buildFromTemplate([
                 label: 'Refresh Player',
                 click: () => {
                     playerWindow.reload();
+                }
+
+            },
+            {
+                label: 'Discord Reconnect',
+                click: () => {
+                    rpc.login({ clientId: '1238433985567391807' }).catch(console.error);
                 }
 
             },
