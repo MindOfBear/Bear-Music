@@ -11,7 +11,7 @@ const detailOptions = [
     '💣 Planting the Bomb',
     '🛡️ Healing in the Storm',
     '🚁 Dropping into Verdansk',
-    '💥 Victory Royale',
+    '💥 Enemy UAV Overhead',
     '🦸‍♂️ Reviving Teammates',
     '🧟 Surviving the Zombie Horde',
     '🚨 Using Killstreaks',
