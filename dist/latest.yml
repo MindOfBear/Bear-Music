@@ -1,8 +1,8 @@
 version: 1.3.0
 files:
   - url: Bear-Music-Setup-1.3.0.exe
-    sha512: QrByEnACFVTsbeiV9IBUMMz7pdxynnmOmbgeI6LtaqF4gvbJCylbpYpBXgKjQ30WPiUWU3amWilXlWBSBQ22sw==
-    size: 91722661
+    sha512: 89votWOxeQShxasFd5ypl0R/yO4Xt0e5WZfpw2vza5MZvHX1zbqEeDnRBhG4Py6J49mXvh3v9m/9PhoEvJ9HQg==
+    size: 91722256
 path: Bear-Music-Setup-1.3.0.exe
-sha512: QrByEnACFVTsbeiV9IBUMMz7pdxynnmOmbgeI6LtaqF4gvbJCylbpYpBXgKjQ30WPiUWU3amWilXlWBSBQ22sw==
-releaseDate: '2024-05-10T20:55:36.556Z'
+sha512: 89votWOxeQShxasFd5ypl0R/yO4Xt0e5WZfpw2vza5MZvHX1zbqEeDnRBhG4Py6J49mXvh3v9m/9PhoEvJ9HQg==
+releaseDate: '2024-05-16T20:04:06.635Z'
