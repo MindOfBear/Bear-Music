@@ -25,7 +25,14 @@ async function setRichPresence(playerWindowTitle){
     });
 }
 
-rpc.login({ clientId: '1238433985567391807' }).catch(console.error);
+async function initializeRPC() {
+    try {
+        await rpc.login({ clientId: '1238433985567391807' });
+        console.log('RPC connected successfully.');
+    } catch (error) {
+        console.error('Error connecting RPC:', error);
+    }
+}
 
 let fs = require("fs");
 const createAboutWindow = require('./pages/aboutPage/aboutWindow');
@@ -175,8 +182,8 @@ const playerMenu = Menu.buildFromTemplate([
             },
             {
                 label: 'Discord Reconnect',
-                click: () => {
-                    rpc.login({ clientId: '1238433985567391807' }).catch(console.error);
+                click: async () => {
+                    await initializeRPC();
                 }
 
             },
@@ -187,6 +194,7 @@ const playerMenu = Menu.buildFromTemplate([
 app.on('ready', async () => { 
     createLoadingWindow();
     createWindow();
+    await initializeRPC();
     try {
         data = JSON.parse(fs.readFileSync(initPath, 'utf8'));
         if (data.OldMan === true){
