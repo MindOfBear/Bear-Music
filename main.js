@@ -180,13 +180,6 @@ const playerMenu = Menu.buildFromTemplate([
                 }
 
             },
-            {
-                label: 'Discord Reconnect',
-                click: async () => {
-                    await initializeRPC();
-                }
-
-            },
         ]
     }
 ]);
